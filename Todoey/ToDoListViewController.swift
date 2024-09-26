@@ -10,7 +10,7 @@ import UIKit
 
 class ToDoListViewController: UITableViewController {
     
-    let item = ["Find Mike", "Buy eggs", "But apples"]
+    var item = ["Find Mike", "Buy eggs", "But apples"]
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -33,8 +33,7 @@ class ToDoListViewController: UITableViewController {
         return cell
     }
     
-    //tableView Delegate Methods
-    
+    //MARK: - tableView Delegate Methods
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         //print(item[indexPath.row])
 
@@ -46,6 +45,36 @@ class ToDoListViewController: UITableViewController {
         
         tableView.deselectRow(at: indexPath, animated: true)
     }
-
+    
+    //MARK: - add new items
+    @IBAction func addBtnPressed(_ sender: UIBarButtonItem) {
+        
+        var textField = UITextField()
+        
+        let alert = UIAlertController(title: "Add a new item on the Todoey", message: "", preferredStyle: .alert)
+        
+        let action = UIAlertAction(title: "Add Item", style: .default) { action in
+            //oq vai acontecer quando o user clicar para adicionar um item
+            
+            //vai adicionar o item que foi digitado pelo usuario na nossa lista
+            self.addItemOnList(textField.text!)
+            self.tableView.reloadData()
+            
+            
+        }
+        alert.addTextField { alertTextField in
+            alertTextField.placeholder = "Create new item"
+            textField = alertTextField
+        }
+        alert.addAction(action)
+        present(alert, animated: true , completion: nil)
+    }
+    
+    //MARK: - funcão que adiciona o item que o usuario escreveu na nossa lista
+    func addItemOnList(_ newItem: String){
+        item.append(newItem)
+        self.tableView.reloadData()
+        
+    }
 }
 
