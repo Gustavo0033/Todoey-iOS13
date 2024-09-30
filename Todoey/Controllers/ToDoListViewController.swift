@@ -10,25 +10,43 @@ import UIKit
 
 class ToDoListViewController: UITableViewController {
     
-    var item = ["Find Mike", "Buy eggs", "But apples"]
-
+    var itemArray = [Item()]
+    let defaults = UserDefaults.standard
+    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Item.plist")
+    
     override func viewDidLoad() {
         super.viewDidLoad()
- 
+        
+        print(dataFilePath!)
+        
+        loadItems()
+        
+
     }
-     
+    
+    
+    
     override func numberOfSections(in tableView: UITableView) -> Int {
         return 1
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return item.count
+        return itemArray.count
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        
+        //let cell = UITableViewCell(style: .default, reuseIdentifier: "ToDoItemCell")
         let cell = tableView.dequeueReusableCell(withIdentifier: "ToDoItemCell", for: indexPath)
         
-        cell.textLabel?.text = item[indexPath.row]
+        cell.textLabel?.text = itemArray[indexPath.row].title
+        
+        let item = itemArray[indexPath.row]
+        cell.textLabel?.text = item.title
+        
+        // um jeito diferente de usar se for verdadeiro/falso
+        // se for verdadeira tera o checkmark, se não, sem checkmark
+        cell.accessoryType = item.done ? .checkmark : .none
         
         return cell
     }
@@ -36,13 +54,12 @@ class ToDoListViewController: UITableViewController {
     //MARK: - tableView Delegate Methods
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         //print(item[indexPath.row])
-
-        if tableView.cellForRow(at: indexPath)?.accessoryType == .checkmark{ //checkMark de quando clicarmos em um item da tableView
-            tableView.cellForRow(at: indexPath)?.accessoryType = .none
-        }else{
-            tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
-        }
         
+        itemArray[indexPath.row].done = !itemArray[indexPath.row].done
+        
+        self.saveItems()
+        
+
         tableView.deselectRow(at: indexPath, animated: true)
     }
     
@@ -57,8 +74,14 @@ class ToDoListViewController: UITableViewController {
             //oq vai acontecer quando o user clicar para adicionar um item
             
             //vai adicionar o item que foi digitado pelo usuario na nossa lista
-            self.addItemOnList(textField.text!)
-            self.tableView.reloadData()
+            
+            let newItem = Item()
+            newItem.title = textField.text!
+            self.itemArray.append(newItem)
+            
+            self.saveItems()
+            
+            
             
             
         }
@@ -70,11 +93,29 @@ class ToDoListViewController: UITableViewController {
         present(alert, animated: true , completion: nil)
     }
     
-    //MARK: - funcão que adiciona o item que o usuario escreveu na nossa lista
-    func addItemOnList(_ newItem: String){
-        item.append(newItem)
+    func saveItems(){
+        let encoder = PropertyListEncoder()
+        
+        do{
+            let data = try encoder.encode(itemArray)
+            try data.write(to: dataFilePath!)
+        }catch{
+            print("error enconding item array \(error.localizedDescription)")
+        }
         self.tableView.reloadData()
         
     }
+    
+    func loadItems(){
+        if let data = try? Data(contentsOf: dataFilePath!){
+            let decoder = PropertyListDecoder()
+            do{
+                itemArray = try decoder.decode([Item].self, from: data)
+            }catch{
+                print("error in decoder")
+            }
+        }
+    }
 }
+
 
