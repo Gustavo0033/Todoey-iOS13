@@ -7,19 +7,18 @@
 //
 
 import UIKit
+import CoreData
 
 class ToDoListViewController: UITableViewController {
     
-    var itemArray = [Item()]
-    let defaults = UserDefaults.standard
-    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Item.plist")
+    var itemArray = [Item]()
+    
+    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        print(dataFilePath!)
-        
-        loadItems()
+        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
+        //loadItems()
         
 
     }
@@ -43,6 +42,7 @@ class ToDoListViewController: UITableViewController {
         
         let item = itemArray[indexPath.row]
         cell.textLabel?.text = item.title
+        
         
         // um jeito diferente de usar se for verdadeiro/falso
         // se for verdadeira tera o checkmark, se não, sem checkmark
@@ -73,17 +73,12 @@ class ToDoListViewController: UITableViewController {
         let action = UIAlertAction(title: "Add Item", style: .default) { action in
             //oq vai acontecer quando o user clicar para adicionar um item
             
-            //vai adicionar o item que foi digitado pelo usuario na nossa lista
-            
-            let newItem = Item()
+            let newItem = Item(context: self.context)
             newItem.title = textField.text!
+            newItem.done = false
             self.itemArray.append(newItem)
             
             self.saveItems()
-            
-            
-            
-            
         }
         alert.addTextField { alertTextField in
             alertTextField.placeholder = "Create new item"
@@ -93,19 +88,19 @@ class ToDoListViewController: UITableViewController {
         present(alert, animated: true , completion: nil)
     }
     
+    
     func saveItems(){
-        let encoder = PropertyListEncoder()
         
         do{
-            let data = try encoder.encode(itemArray)
-            try data.write(to: dataFilePath!)
+            try context.save()
         }catch{
-            print("error enconding item array \(error.localizedDescription)")
+            print("error saving context")
         }
         self.tableView.reloadData()
         
     }
     
+    /*
     func loadItems(){
         if let data = try? Data(contentsOf: dataFilePath!){
             let decoder = PropertyListDecoder()
@@ -116,6 +111,7 @@ class ToDoListViewController: UITableViewController {
             }
         }
     }
+     */
 }
 
 
