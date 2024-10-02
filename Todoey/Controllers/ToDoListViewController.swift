@@ -9,20 +9,30 @@
 import UIKit
 import CoreData
 
-class ToDoListViewController: UITableViewController {
+class ToDoListViewController: UITableViewController{
     
     var itemArray = [Item]()
     
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
+    
+    
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
-        //loadItems()
         
-
+        let request : NSFetchRequest<Item> = Item.fetchRequest()
+        
+        loadItems(with: request)
+        
+        
     }
     
+    
+    
+    //MARK: - TableView Datasource Methods
     
     
     override func numberOfSections(in tableView: UITableView) -> Int {
@@ -51,15 +61,18 @@ class ToDoListViewController: UITableViewController {
         return cell
     }
     
-    //MARK: - tableView Delegate Methods
+    //MARK: - Updating items
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        //print(item[indexPath.row])
+        
+        
+        //context.delete(itemArray[indexPath.row]) // removendo os dados do nosso context (permanent stores)
+        //itemArray.remove(at: indexPath.row) // removendo o item atual do array
         
         itemArray[indexPath.row].done = !itemArray[indexPath.row].done
         
         self.saveItems()
         
-
+        
         tableView.deselectRow(at: indexPath, animated: true)
     }
     
@@ -74,8 +87,8 @@ class ToDoListViewController: UITableViewController {
             //oq vai acontecer quando o user clicar para adicionar um item
             
             let newItem = Item(context: self.context)
-            newItem.title = textField.text!
-            newItem.done = false
+            newItem.title = textField.text! //esse title é do CoreData que criamos
+            newItem.done = false //esse done é do CoreData que criamos e precisa receber uma valor para não dar erro no app
             self.itemArray.append(newItem)
             
             self.saveItems()
@@ -89,29 +102,63 @@ class ToDoListViewController: UITableViewController {
     }
     
     
+    
+    //MARK: - Creating items
     func saveItems(){
-        
         do{
             try context.save()
         }catch{
             print("error saving context")
         }
         self.tableView.reloadData()
+    }
+    
+    
+    //MARK: - Reading items
+    func loadItems(with request: NSFetchRequest<Item> = Item.fetchRequest()){
+        
+        
+        do {
+            itemArray = try context.fetch(request)
+        } catch  {
+            print("error fetching data from context")
+        }
+    }
+}
+
+//MARK: - SeachBar Methods
+
+extension ToDoListViewController: UISearchBarDelegate {
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        
+        let request: NSFetchRequest<Item> = Item.fetchRequest()
+        
+        // Nessa consulta se torna "Para todos os itens no array que contem o title
+        // que foi pesquisa na nossa searchBar.text
+        request.predicate  = NSPredicate(format: "title CONTAINS[cd] %@",searchBar.text!)
+        
+        request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
+        
+        loadItems(with: request)
+        
+        tableView.reloadData()
         
     }
     
-    /*
-    func loadItems(){
-        if let data = try? Data(contentsOf: dataFilePath!){
-            let decoder = PropertyListDecoder()
-            do{
-                itemArray = try decoder.decode([Item].self, from: data)
-            }catch{
-                print("error in decoder")
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        
+        if searchBar.text?.count == 0 {  //quando eu clicar no pequeno X do searcBar e ele ficar sem nenhum texto dentro
+            loadItems()
+            
+            
+            //assim que eu apertei no x e o teclado ficar sem nenhum texto, o teclado irá sumir
+            // e veremos todos os items novamente
+            DispatchQueue.main.async {
+                searchBar.resignFirstResponder()
             }
         }
     }
-     */
 }
 
 
