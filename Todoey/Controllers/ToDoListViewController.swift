@@ -16,9 +16,6 @@ class ToDoListViewController: UITableViewController{
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     
-    
-    
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
@@ -144,6 +141,8 @@ extension ToDoListViewController: UISearchBarDelegate {
         
         tableView.reloadData()
         
+        
+        
     }
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
@@ -156,6 +155,7 @@ extension ToDoListViewController: UISearchBarDelegate {
             // e veremos todos os items novamente
             DispatchQueue.main.async {
                 searchBar.resignFirstResponder()
+                self.tableView.reloadData()
             }
         }
     }
