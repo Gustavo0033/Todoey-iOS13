@@ -82,7 +82,8 @@ class ToDoListViewController: UITableViewController{
     @IBAction func addBtnPressed(_ sender: UIBarButtonItem) {
         
         var textField = UITextField()
-        
+
+
         let alert = UIAlertController(title: "Add a new item on the Todoey", message: "", preferredStyle: .alert)
         
         let action = UIAlertAction(title: "Add Item", style: .default) { action in
@@ -94,6 +95,7 @@ class ToDoListViewController: UITableViewController{
                     try self.realm.write {
                         let newItem = Item()
                         newItem.title = textField.text!
+                        newItem.dataCreated = Date()
                         currentCategory.items.append(newItem)
                     }
                 }catch{
@@ -136,43 +138,33 @@ class ToDoListViewController: UITableViewController{
     }
 }
 
-/*
- //MARK: - SeachBar Methods
- 
- extension ToDoListViewController: UISearchBarDelegate {
- 
- func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
- 
- let request: NSFetchRequest<Item> = Item.fetchRequest()
- 
- // Nessa consulta se torna "Para todos os itens no array que contem o title
- // que foi pesquisa na nossa searchBar.text
- let predicate  = NSPredicate(format: "title CONTAINS[cd] %@",searchBar.text!)
- 
- request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
- 
- loadItems(with: request, predicate: predicate)
- 
- tableView.reloadData()
- 
- 
- 
- }
- 
- func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
- 
- if searchBar.text?.count == 0 {  //quando eu clicar no pequeno X do searcBar e ele ficar sem nenhum texto dentro
- loadItems()
- 
- 
- //assim que eu apertei no x e o teclado ficar sem nenhum texto, o teclado irá sumir
- // e veremos todos os items novamente
- DispatchQueue.main.async {
- searchBar.resignFirstResponder()
- self.tableView.reloadData()
- }
- }
- }
- */
 
+//MARK: - SeachBar Methods
 
+extension ToDoListViewController: UISearchBarDelegate {
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        
+        toDoItems = toDoItems?.filter("title CONTAINS[cd] %@", searchBar.text!).sorted(byKeyPath: "dataCreated", ascending: true)
+        
+        tableView.reloadData()
+        
+    }
+
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        
+        if searchBar.text?.count == 0 {  //quando eu clicar no pequeno X do searcBar e ele ficar sem nenhum texto dentro
+            loadItems()
+            
+            
+            //assim que eu apertei no x e o teclado ficar sem nenhum texto, o teclado irá sumir
+            // e veremos todos os items novamente
+            DispatchQueue.main.async {
+                searchBar.resignFirstResponder()
+                self.tableView.reloadData()
+            }
+        }
+    }
+    
+    
+}
