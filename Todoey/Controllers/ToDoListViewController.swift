@@ -9,7 +9,7 @@
 import UIKit
 import RealmSwift
 
-class ToDoListViewController: UITableViewController{
+class ToDoListViewController: SwipeTableViewController{
     
     
     let realm = try! Realm()
@@ -43,8 +43,9 @@ class ToDoListViewController: UITableViewController{
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
+        
         //let cell = UITableViewCell(style: .default, reuseIdentifier: "ToDoItemCell")
-        let cell = tableView.dequeueReusableCell(withIdentifier: "ToDoItemCell", for: indexPath)
         if let item = toDoItems?[indexPath.row] {
             
             cell.textLabel?.text = item.title
@@ -72,9 +73,7 @@ class ToDoListViewController: UITableViewController{
             } catch  {
                 print("Error while saving done status \(error)")
             }
-            
         }
-        
         tableView.reloadData()
     }
     
@@ -82,9 +81,9 @@ class ToDoListViewController: UITableViewController{
     @IBAction func addBtnPressed(_ sender: UIBarButtonItem) {
         
         var textField = UITextField()
-
-
-        let alert = UIAlertController(title: "Add a new item on the Todoey", message: "", preferredStyle: .alert)
+        
+        
+        let alert = UIAlertController(title: "Add a new item", message: "", preferredStyle: .alert)
         
         let action = UIAlertAction(title: "Add Item", style: .default) { action in
             //oq vai acontecer quando o user clicar para adicionar um item
@@ -136,6 +135,23 @@ class ToDoListViewController: UITableViewController{
         
         tableView.reloadData()
     }
+    
+    
+    override func updateModel(at indexpath: IndexPath){
+        //update dataModel
+        if let item = toDoItems?[indexpath.row]{
+            
+            do {
+                try realm.write {
+                    realm.delete(item)
+                }
+            } catch  {
+                print("Error while deleting \(error)")
+            }
+
+        }
+        
+    }
 }
 
 
@@ -150,12 +166,11 @@ extension ToDoListViewController: UISearchBarDelegate {
         tableView.reloadData()
         
     }
-
+    
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         
         if searchBar.text?.count == 0 {  //quando eu clicar no pequeno X do searcBar e ele ficar sem nenhum texto dentro
             loadItems()
-            
             
             //assim que eu apertei no x e o teclado ficar sem nenhum texto, o teclado irá sumir
             // e veremos todos os items novamente
@@ -165,6 +180,6 @@ extension ToDoListViewController: UISearchBarDelegate {
             }
         }
     }
-    
-    
+
 }
+

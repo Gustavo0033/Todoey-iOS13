@@ -10,10 +10,10 @@ import UIKit
 import CoreData
 import RealmSwift
 
-class CategoryTableViewController: UITableViewController {
+class CategoryTableViewController: SwipeTableViewController {
+    
     
     let realm = try! Realm()
-    
     var categories: Results<Category>?
     
     override func viewDidLoad() {
@@ -76,12 +76,12 @@ class CategoryTableViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "categoryCell", for: indexPath)
+        
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
         
         //se for nil, retornará o que está entre aspas
         // caso seja verdadeiro, retornará os items
         cell.textLabel?.text = categories?[indexPath.row].name ?? "No categories added"
-        
         return cell
     }
     
@@ -103,10 +103,23 @@ class CategoryTableViewController: UITableViewController {
     
     func loadCategories(){
         
-         categories = realm.objects(Category.self)
+        categories = realm.objects(Category.self)
         
         tableView.reloadData()
-        
+    }
+    
+    override func updateModel(at indexPath: IndexPath){
+        if let categoryForDeletion = self.categories?[indexPath.row]{
+            do {
+                try self.realm.write {
+                    realm.delete(categoryForDeletion)
+                }
+            } catch  {
+                print("Error while trying to delete. \(error)")
+            }
+        }
         
     }
 }
+
+
