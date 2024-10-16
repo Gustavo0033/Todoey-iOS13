@@ -8,6 +8,7 @@
 
 import UIKit
 import RealmSwift
+import ChameleonFramework
 
 class ToDoListViewController: SwipeTableViewController{
     
@@ -49,6 +50,11 @@ class ToDoListViewController: SwipeTableViewController{
         if let item = toDoItems?[indexPath.row] {
             
             cell.textLabel?.text = item.title
+            if let colour = UIColor(hexString: selectedCategory!.colour)?.darken(byPercentage: CGFloat(indexPath.row) / CGFloat(toDoItems!.count)){
+                
+                cell.backgroundColor = colour
+                cell.textLabel?.textColor = UIColor(contrastingBlackOrWhiteColorOn: colour, isFlat: true)
+            }
             // um jeito diferente de usar se for verdadeiro/falso
             // se for verdadeira tera o checkmark, se não, sem checkmark
             cell.accessoryType = item.done ? .checkmark : .none
