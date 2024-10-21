@@ -15,6 +15,7 @@ class ToDoListViewController: SwipeTableViewController{
     
     let realm = try! Realm()
     var toDoItems: Results<Item>?
+    @IBOutlet weak var searchBar: UISearchBar!
     
     var selectedCategory : Category?{
         didSet{
@@ -24,9 +25,25 @@ class ToDoListViewController: SwipeTableViewController{
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
         
-        //let request : NSFetchRequest<Item> = Item.fetchRequest()
+    }
+    
+    
+    override func viewWillAppear(_ animated: Bool) {
+        if let colourHex = selectedCategory?.colour{
+            
+            title = selectedCategory!.name
+            
+            guard let navBar = navigationController?.navigationBar else {fatalError("navigation controller doesnt exist")}
+            
+            navBar.backgroundColor = UIColor(hexString: colourHex)
+            navBar.tintColor = ContrastColorOf(UIColor(hexString: colourHex)!, returnFlat: true)
+            //navBar.titleTextAttributes = [.foregroundColor: ContrastColorOf(UIColor(hexString: colourHex)!, returnFlat: true)]
+            navBar.largeTitleTextAttributes = [.foregroundColor: ContrastColorOf(UIColor(hexString: colourHex)!, returnFlat: true)]
+            
+            searchBar.barTintColor = UIColor(hexString: colourHex)
+            
+        }
     }
     
     
@@ -54,6 +71,8 @@ class ToDoListViewController: SwipeTableViewController{
                 
                 cell.backgroundColor = colour
                 cell.textLabel?.textColor = UIColor(contrastingBlackOrWhiteColorOn: colour, isFlat: true)
+                
+                
             }
             // um jeito diferente de usar se for verdadeiro/falso
             // se for verdadeira tera o checkmark, se não, sem checkmark

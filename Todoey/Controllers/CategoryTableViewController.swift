@@ -20,10 +20,19 @@ class CategoryTableViewController: SwipeTableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         loadCategories()
+        tableView.rowHeight = 80
         
         //let request: NSFetchRequest<Category> = Category.fetchRequest()
         //loadCategories(with: request)
         
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        guard let navBar = navigationController?.navigationBar else{
+            fatalError("Navigation controller does not exist")
+        }
+        
+        navBar.backgroundColor = UIColor(hexString: "1D9BF6")
     }
     
     
@@ -54,6 +63,7 @@ class CategoryTableViewController: SwipeTableViewController {
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         performSegue(withIdentifier: "goToItems", sender: self)
+        tableView.deselectRow(at: indexPath, animated: true)
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -86,14 +96,13 @@ class CategoryTableViewController: SwipeTableViewController {
             // caso seja verdadeiro, retornará os items
             cell.textLabel?.text = categories?[indexPath.row].name ?? "No categories added"
             cell.backgroundColor = UIColor(hexString: categories?[indexPath.row].colour ?? "#1D98F6")
+            cell.textLabel?.textColor = UIColor(contrastingBlackOrWhiteColorOn: cell.backgroundColor!, isFlat: true)
         }
         
 
 
         return cell
     }
-    
-    
     
     
     //MARK: - Data Manipulation Methods
